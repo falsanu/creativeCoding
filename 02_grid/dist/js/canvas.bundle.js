@@ -125,14 +125,14 @@ addEventListener("resize", function () {
   canvas.width = innerWidth;
   canvas.height = innerHeight;
 
-  init();
+  // init();
 });
 addEventListener("click", function () {
   init();
 });
 
 // Objects
-function Slide(x, y, xId, yId, radius, rotation, color) {
+function Slide(x, y, xId, yId, radius, color) {
   this.x = x;
   this.y = y;
   this.xId = xId;
@@ -142,7 +142,6 @@ function Slide(x, y, xId, yId, radius, rotation, color) {
   this.targetY;
   this.radius = radius;
   this.color = color;
-  this.rotation = rotation;
 
   this.neighbours = {
     left: null,
@@ -247,8 +246,8 @@ function getNeigbourPosition(xId, yId) {
 Slide.prototype.update = function () {
   //   if (this.xId == 4 && this.yId == 2) {
   //   this.x = objects[this.id - 1].targetX;
-  this.x = this.x + _utils2.default.randomIntFromRange(-1, 1);
-  this.y = this.y + _utils2.default.randomIntFromRange(-1, 1);
+  // this.x = this.x + utils.randomIntFromRange(-1, 1);
+  // this.y = this.y + utils.randomIntFromRange(-1, 1);
   //   }
 
   //   this.targetX = this.x + 100;
@@ -275,19 +274,51 @@ var radius = 4;
 var length = 300;
 var initialShift = length - radius * 2;
 
-var numObjectsX = Math.floor(canvas.width / (length / 2));
-var numObjectsY = Math.floor(canvas.height / (length / 2)) + 2;
+var marginLeft = 100;
+var topDownDistance = 100;
+
+var numObjectsX = 6; //Math.floor(canvas.width / (length / 2));
+var numObjectsY = 5; //Math.floor(canvas.height / (length / 2)) + 2;
 
 var color = "rgba(255,255,255,0.4)";
+var nextL = 0;
 function init() {
   objects = [];
 
+  // +---+------+---------+------+---+
+  // 0   1      2         3      4   5
   for (var i = 0; i < numObjectsY; i++) {
+    nextL = 0;
     for (var j = 0; j < numObjectsX; j++) {
-      var l = length;
-      var shift = i % 2 ? l / 2 : 0;
+      var l = nextL;
 
-      objects.push(new Slide(j * l - shift, i * l / 2, i, j, radius, -0, color));
+      switch (j) {
+        case 0:
+          nextL += 0;
+          break;
+        case 1:
+          nextL += 10;
+          break;
+        case 2:
+          nextL += 50;
+          break;
+        case 3:
+          nextL += 100;
+          break;
+        case 4:
+          nextL += 50;
+          break;
+        case 5:
+          nextL += 10;
+          break;
+      }
+
+      console.log(nextL);
+      var shift = 0; //i % 2 ? l / 2 : 0;
+      var x = marginLeft + nextL;
+      var y = i * topDownDistance / 2 + 100;
+
+      objects.push(new Slide(x, y, i, j, radius, color));
     }
   }
   console.log(objects);
@@ -295,8 +326,8 @@ function init() {
 
 // Animation Loop
 function animate() {
-  requestAnimationFrame(animate);
-  c.fillStyle = "rgba(20,20,20,0.4)";
+  // requestAnimationFrame(animate);
+  c.fillStyle = "rgba(20,20,20,1)";
   c.fillRect(0, 0, canvas.width, canvas.height);
 
   //   c.fillText("HTML CANVAS BOILERPLATE", mouse.x, mouse.y);
