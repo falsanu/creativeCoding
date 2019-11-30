@@ -3,11 +3,13 @@ let width = ctx.width;
 let height = ctx.height;
 let areas = new Array();
 
-let rowCount = 50;
-let colCount = 70;
+let rowCount = 20;
+let colCount = 30;
 let magnifier = 3;
-let swooshLength = 20;
+let magnifierReducer = 1.2;
+let swooshLength = 3;
 let animationSpeed = 0.1;
+let animate = true;
 
 let imageSource =
   "https://images.pexels.com/photos/681335/pexels-photo-681335.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=350";
@@ -67,39 +69,64 @@ function resetImage() {
   ctx.drawImage(theImage, 0, 0);
 }
 
-function drawImage(obj, targetMag, color, mag) {
+function drawImage(obj, direction, k, mag, targetMag) {
   if (!obj) return;
   if (!mag) {
-    mag = 1;
+    // mag = 1;
+    mag = targetMag;
   }
-  if (!color) {
-    color = "#FF0000";
-  }
+  // if (!animate) {
+  //   mag = targetMag;
+  // }
+  let color = "#FF0000";
+
   let nw = obj.w * mag,
-    nh = obj.h * mag;
+    h = obj.h * mag;
+  let left = (nw - obj.w) / 2;
+  let top = (h - obj.h) / 2;
 
-  let links = (nw - obj.w) / 2;
-  let oben = (nh - obj.h) / 2;
+  let x = obj.x - left;
+  let y = obj.y - top;
 
-  ctx.drawImage(
-    theImage,
-    obj.x,
-    obj.y,
-    obj.w,
-    obj.h,
-    obj.x - links,
-    obj.y - oben,
-    obj.w * mag,
-    obj.h * mag
-  );
+  if (targetMag != magnifier) {
+    switch (direction) {
+      case "t":
+        top = 0;
+        // console.log(top);
+        // console.log();
+        y = obj.y - (h - obj.h) / 2;
+        // h = 200;
+        break;
+      case "tr":
+        break;
+      case "r":
+        break;
+      case "dr":
+        break;
+      case "d":
+        // top = -nh * 2; //- obj.h + 200;
+        break;
+      case "dl":
+        break;
+      case "l":
+        break;
+      case "tl":
+        break;
+    }
+  }
+
+  ctx.drawImage(theImage, obj.x, obj.y, obj.w, obj.h, x, y, obj.w * mag, h);
+  ctx.strokeStyle = "#ffffff";
+  ctx.strokeRect(x, y, obj.w * mag, h);
   if (mag < targetMag) {
-    window.requestAnimationFrame(function() {
-      drawImage(obj, targetMag, color, mag + animationSpeed);
-    });
+    // window.requestAnimationFrame(function() {
+    //   drawImage(obj, direction, k, targetMag, mag + animationSpeed);
+    // });
   }
 }
 
 initCanvas();
+
 function writeMessage(canvas, message) {
   var context = canvas.getContext("2d");
   context.clearRect(0, 0, 300, 50);
@@ -107,6 +134,7 @@ function writeMessage(canvas, message) {
   context.fillStyle = "black";
   context.fillText(message, 10, 25);
 }
+
 function getMousePos(canvas, evt) {
   var rect = canvas.getBoundingClientRect();
   return {
@@ -133,98 +161,49 @@ canvas.addEventListener(
           mousePos.y > o.y &&
           mousePos.y < o.y + o.h
         ) {
-          let lowerer = 0.8;
-          let reducer = magnifier * lowerer;
+          // let lowerer = magnifierReducer;
+          // let reducer = magnifier * lowerer;
 
           // move to left and right
-          let mag = magnifier;
-          for (let k = 1; k <= swooshLength; k++) {
-            mag = mag * 0.8;
-            if (mag > 1) {
-              drawImage(areas[i + k][j], mag); // right
+          let mag = 0.5;
+          for (let k = swooshLength; k >= 1; k--) {
+            mag = mag + magnifierReducer;
 
-              drawImage(areas[i - k][j], mag); // left
+            if (mag <= magnifier) {
+              drawImage(areas[i + k][j + k], "d", k, mag); // top right
+              drawImage(areas[i - k][j - k], "d", k, mag); // bbottom left
 
-              drawImage(areas[i][j + k], mag); //bottom
-              drawImage(areas[i][j - k], mag); //top
+              drawImage(areas[i + k][j - k], "d", k, mag); // top right
+              drawImage(areas[i - k][j + k], "d", k, mag); // bbottom left
 
-              drawImage(areas[i + k][j + k], mag); // top right
-              drawImage(areas[i - k][j - k], mag); // bbottom left
+              // for (let l = 0; l < k; l++) {
+              //   drawImage(areas[i + k][j + l], "d", k, mag); // down
+              //   drawImage(areas[i - k][j + l], "d", k, mag); // up
 
-              drawImage(areas[i + k][j - k], mag); // top right
-              drawImage(areas[i - k][j + k], mag); // bbottom left
+              //   drawImage(areas[i + k][j - l], "d", k, mag); // down
+              //   drawImage(areas[i - k][j - l], "d", k, mag); // up
 
-              for (let l = 0; l < k; l++) {
-                drawImage(areas[i + k][j + l], mag); // down
-                drawImage(areas[i - k][j + l], mag); // up
+              //   drawImage(areas[i - l][j + k], "d", k, mag); //bottom
+              //   drawImage(areas[i + l][j + k], "d", k, mag); //bottom
 
-                drawImage(areas[i + k][j - l], mag); // down
-                drawImage(areas[i - k][j - l], mag); // up
+              //   drawImage(areas[i + l][j - k], "d", k, mag); //top
+              //   drawImage(areas[i - l][j - k], "d", k, mag); //top
+              // }
 
-                drawImage(areas[i - l][j + k], mag); //bottom
-                drawImage(areas[i + l][j + k], mag); //bottom
+              drawImage(areas[i][j - k], "t", k, mag); //top
 
-                drawImage(areas[i + l][j - k], mag); //top
-                drawImage(areas[i - l][j - k], mag); //top
-              }
+              drawImage(areas[i + k][j], "r", k, mag); // right
+
+              drawImage(areas[i - k][j], "l", k, mag); // left
+
+              drawImage(areas[i][j + k], "d", k, mag); //bottom
             }
-            /*
-            if(k == swooshLength) {
-              if(areas[i]){
-                for(let l = j+k; l<areas[i].length; i++){
-
-                  drawImage(areas[i][l], mag, "#00FF00")
-
-                }
-              }
-            }
-            */
-            //            drawImage(areas[i-k][j], magnifier * (1/k))
           }
-          /*
-          for(let k=swooshLenght; k>=0; k--) {
-            areas[i+k][j];
-          }
-
-          for(let k=0; k<=swooshLenght; k++) {
-
-            drawImage(areas[i+k][j+1], getK(k))
-            drawImage(areas[i+k][j-1], getK(k))
-            drawImage(areas[i+k][j], getK(k))
-            drawImage(areas[i][j+k], getK(k))
-
-          }
-
-          for(let k=swooshLenght; k>=0; k--) {
-            drawImage(areas[i-k][j+1], getK(k))
-            drawImage(areas[i-k][j-1], getK(k))
-            drawImage(areas[i-k][j], getK(k))
-            drawImage(areas[i][j-k], getK(k))
-
-          }*/
-
-          drawImage(o, magnifier);
+          drawImage(o, "t", 0, magnifier);
         }
       }
     }
-    /*
-    for (i = 0; i < areas.length; i++) {
-      let o = areas[i];
-      if (
-        mousePos.x > o.x &&
-        mousePos.x < o.x + o.w &&
-        mousePos.y > o.y &&
-        mousePos.y < o.y + o.h
-      ) {
-        console.log("Catch");
-        resetImage();
 
-        drawImage(areas[i+1], 1.5)
-         drawImage(areas[i-1], 1.5)
-        drawImage(o, 2);
-      }
-    }
-    */
     var message = "Mouse position: " + mousePos.x + "," + mousePos.y;
     writeMessage(canvas, message);
   },
